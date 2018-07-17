@@ -1,0 +1,4 @@
+#cmakedefine SSID "@SSID@"
+#cmakedefine PASSWORD "@PASSWORD@"
+#cmakedefine MQTT_USER "@MQTT_USER@"
+#cmakedefine MQTT_PASS "@MQTT_PASS@"

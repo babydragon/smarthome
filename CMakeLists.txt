@@ -1,79 +1,37 @@
-#
-# CMakeLists template to Arduino development.
-#
-#################################
-# ARDUINO_PROTOCOL
-# if upload is done by makefile
-# protocol list http://www.nongnu.org/avrdude/user-manual/avrdude_4.html
-#################################
-# ARDUINO_VAR
-# board variant
-# types can be found here: arduino/hardware/arduino/avr/variants/*
-# or here:
-#
-# "LilyPad Arduino USB"                  "leonardo"
-# "Arduino NG or older"                  "standard"
-# "Arduino BT"                           "eightanaloginputs"
-# "Arduino Duemilanove or Diecimila"     "standard"
-# "Arduino Esplora"                      "leonardo"
-# "Arduino Ethernet"                     "ethernet"
-# "Arduino Fio"                          "eightanaloginputs"
-# "Arduino Gemma"                        "gemma"
-# "Arduino Leonardo"                     "leonardo"
-# "LilyPad Arduino"                      "standard"
-# "Arduino/Genuino Mega or Mega 2560"    "mega"
-# "Arduino Mega ADK"                     "mega"
-# "Arduino/Genuino Micro"                "micro"
-# "Arduino Mini"                         "eightanaloginputs"
-# "Arduino Nano"                         "eightanaloginputs"
-# "Arduino Pro or Pro Mini"              "eightanaloginputs"
-# "Arduino Robot Control"                "robot_control"
-# "Arduino Robot Motor"                  "robot_motor"
-# "Arduino/Genuino Uno"                  "standard"
-# "Arduino Yún"                          "yun"
-#################################
-# ARDUINO_MCU
-# board microcontroller
-# list: $ avr-gcc -mmcu=x
-#################################
-# ARDUINO_FCPU
-# board clock in Hz
-#################################
-# ARDUINO_UPLOAD_SPEED
-# upload baudrate
-#################################
-# ARDUINO_PORT
-# usb interface to upload
-# look at: $ lsusb or $ ls /dev/tty*
-#################################
-# ARDUINO_PATH
-# Arduino folder
-# e.g: /usr/share/arduino or ~/.local/share/kdevelop/arduino-x.x.x
-#################################
-
-# Compile
-set(ARDUINO_VAR          "mega")
-set(ARDUINO_MCU          "atmega2560")
-set(ARDUINO_FCPU         "16000000")
-
-# Upload
-set(ARDUINO_UPLOAD_SPEED "115200")
-set(ARDUINO_PROTOCOL     "stk500v1")
-set(ARDUINO_PORT         "/dev/ttyACM0")
-
-# Arduino path
-set(ARDUINO_PATH         "/usr/share/arduino")
-#################################
-
 project(smarthome)
 
 cmake_minimum_required(VERSION 2.8)
 
-include(${CMAKE_SOURCE_DIR}/arduino.cmake)
+set(ESP_ROOT "$ENV{HOME}/code/embed/esp8266")
+set(ESP_BOARD "nodemcu")
+# Compile
+set(ARDUINO_FCPU         "80000000L")
+set(ESP_FLASH_LD "eagle.flash.4m1m.ld")
 
-set(MYPROJECT_SOURCE_FILES
-    ${CMAKE_SOURCE_DIR}/src/main.cpp
-    ${ARDUINO_SOURCE_FILES}
-)
+# Upload
+set(ARDUINO_UPLOAD_SPEED "115200")
+set(ARDUINO_PROTOCOL     "esp")
+set(ARDUINO_PORT         "/dev/ttyUSB0")
+set(ESP_FLASH_MODE "dio")
+set(ESP_FLASH_FREQ "40")
+set(ESP_FLASH_SIZE "4M")
 
-add_executable(smarthome.elf ${MYPROJECT_SOURCE_FILES})
+#deps
+include_directories(include)
+set(USER_LIB_DIR "$ENV{HOME}/Arduino/libraries")
+set(LIBS ESP8266WiFi ESP8266WebServer DHT_sensor_library Adafruit_Unified_Sensor MQTT PMS_Library)
+
+include(${CMAKE_SOURCE_DIR}/esp8266.cmake)
+
+if(NOT DEFINED SSID)
+    message(FATAL_ERROR "ssid not set")
+elseif(NOT DEFINED PASSWORD)
+    message(FATAL_ERROR "password not set")
+elseif(NOT DEFINED MQTT_USER)
+    message(FATAL_ERROR "mqtt user not set")
+elseif(NOT DEFINED MQTT_PASS)
+    message(FATAL_ERROR "mqtt password not set")
+endif()
+
+configure_file(basic_config.h.in basic_config.h @ONLY)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
